@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI GENERATOR</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #C8D8E8;
+  min-height: 100vh;
+}
+
+/* Desktop: full width frame dengan background biru-abu */
+.app-frame {
+  width: 100%;
+  min-height: 100vh;
+  background: #D1DFED;
+  padding: 40px 60px 80px;
+}
+
+/* ── HEADER ── */
+header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 36px;
+}
+
+.menu-btn {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  border: none;
+  background: #FFFFFF;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+}
+.menu-btn::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  right: -2px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #1a1a1a;
+}
+.menu-btn span {
+  display: block;
+  height: 2.5px;
+  background: #1a1a1a;
+  border-radius: 2px;
+}
+.menu-btn span:nth-child(1) { width: 26px; }
+.menu-btn span:nth-child(2) { width: 20px; margin-right: -6px; }
+.menu-btn span:nth-child(3) { width: 26px; }
+
+.header-title {
+  font-size: 72px;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  color: #1a1a1a;
+  line-height: 1;
+}
+
+/* ── CARD BASE ── */
+.card {
+  background: #D9D9D9;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  overflow: hidden;
+}
+
+/* ── INPUT CARD ── */
+.input-card {
+  margin-bottom: 24px;
+}
+
+.textarea-wrap {
+  position: relative;
+}
+
+textarea {
+  width: 100%;
+  min-height: 220px;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 24px 52px 20px 24px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: #1a1a1a;
+  resize: none;
+  display: block;
+}
+textarea::placeholder { color: #888; }
+
+/* Scrollbar dekoratif */
+.scroll-track {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  bottom: 14px;
+  width: 8px;
+  background: rgba(0,0,0,0.12);
+  border-radius: 999px;
+}
+.scroll-thumb {
+  width: 100%;
+  height: 48px;
+  background: rgba(0,0,0,0.35);
+  border-radius: 999px;
+}
+
+.input-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px 18px;
+  border-top: 1px solid rgba(0,0,0,0.09);
+}
+
+.char-label {
+  font-size: 14px;
+  color: #555;
+}
+.char-label span { font-weight: 600; color: #222; }
+
+.scan-btn {
+  padding: 9px 38px;
+  background: transparent;
+  border: 1.5px solid #1a1a1a;
+  border-radius: 999px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background 0.16s, color 0.16s;
+}
+.scan-btn:hover { background: #1a1a1a; color: #fff; }
+.scan-btn.running { opacity: 0.55; pointer-events: none; }
+
+/* ── ANALYSIS CARD ── */
+.analysis-card {
+  margin-bottom: 24px;
+  padding: 20px 24px 22px;
+}
+
+.analysis-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(0,0,0,0.09);
+  margin-bottom: 16px;
+}
+
+.analysis-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.analysis-title em {
+  font-style: normal;
+  font-weight: 400;
+  color: #555;
+  text-transform: none;
+}
+
+.main-pct {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: 0.03em;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 70px 1fr 64px;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+.bar-row:last-child { margin-bottom: 0; }
+
+.bar-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.bar-track {
+  height: 16px;
+  background: rgba(0,0,0,0.10);
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.07);
+  overflow: hidden;
+  position: relative;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 1.2s cubic-bezier(0.34,1.56,0.64,1);
+}
+.bar-fill.green { background: linear-gradient(90deg,#229138,#35a84d); }
+.bar-fill.amber { background: linear-gradient(90deg,#a67a2e,#c99438); }
+
+.bar-pct {
+  font-size: 14px;
+  font-weight: 700;
+  text-align: right;
+}
+.bar-pct.green { color: #229138; }
+.bar-pct.amber { color: #a67a2e; }
+
+/* ── PREVIEW SECTION ── */
+.preview-section {
+  margin-bottom: 24px;
+}
+
+.preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 12px;
+}
+
+.preview-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #555;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+}
+.legend-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+.legend-dot.green { background: #229138; }
+.legend-dot.amber { background: #c99438; }
+
+.preview-card {
+  position: relative;
+  min-height: 240px;
+  padding: 20px 52px 20px 24px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #1a1a1a;
+}
+
+.preview-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  color: #aaa;
+  pointer-events: none;
+}
+.preview-empty svg { width: 34px; height: 34px; }
+.preview-empty p {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.preview-scroll-track {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  bottom: 14px;
+  width: 8px;
+  background: rgba(0,0,0,0.12);
+  border-radius: 999px;
+}
+.preview-scroll-thumb {
+  width: 100%;
+  height: 48px;
+  background: rgba(0,0,0,0.35);
+  border-radius: 999px;
+}
+
+/* highlight */
+.w-human { background: rgba(34,145,56,0.16); border-radius: 2px; }
+.w-ai    { background: rgba(201,148,56,0.22); border-radius: 2px; }
+
+/* ── SCORE ROW ── */
+.score-row {
+  display: flex;
+  justify-content: space-around;
+  padding: 6px 80px 0;
+}
+
+.score-item { text-align: center; }
+
+.score-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 4px;
+}
+
+.score-num {
+  font-size: 64px;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.score-item.human .score-num { color: #229138; }
+.score-item.ai    .score-num { color: #a67a2e; }
+
+.score-tag {
+  font-size: 13px;
+  color: #555;
+  font-weight: 500;
+}
+
+/* ── DRAG ── */
+.drag-on textarea { background: rgba(34,145,56,0.05); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(50px);
+  background: #1a1a1a;
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0;
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 999;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="app-frame">
+
+  <!-- HEADER -->
+  <header>
+    <button class="menu-btn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <h1 class="header-title">AI GENERATOR</h1>
+  </header>
+
+  <!-- INPUT CARD -->
+  <div class="card input-card" id="inputCard">
+    <div class="textarea-wrap">
+      <textarea
+        id="inputText"
+        placeholder="Paste your text, drop or Input"
+        oninput="onInput()"
+      ></textarea>
+      <div class="scroll-track"><div class="scroll-thumb"></div></div>
+    </div>
+    <div class="input-footer">
+      <div class="char-label"><span id="charNum">0</span> character</div>
+      <button class="scan-btn" id="scanBtn" onclick="analyze()">scan</button>
+    </div>
+  </div>
+
+  <!-- ANALYSIS CARD -->
+  <div class="card analysis-card">
+    <div class="analysis-top">
+      <div class="analysis-title">
+        HASIL ANALISIS <em id="analysisTag">: human text</em>
+      </div>
+      <div class="main-pct" id="mainPct">88, 8%</div>
+    </div>
+
+    <div class="bar-row">
+      <div class="bar-name">Human</div>
+      <div class="bar-track"><div class="bar-fill green" id="humanBar" style="width:88.8%"></div></div>
+      <div class="bar-pct green" id="humanPct">88,8%</div>
+    </div>
+
+    <div class="bar-row">
+      <div class="bar-name">AI</div>
+      <div class="bar-track"><div class="bar-fill amber" id="aiBar" style="width:11.2%"></div></div>
+      <div class="bar-pct amber" id="aiPct">11,2%</div>
+    </div>
+  </div>
+
+  <!-- PREVIEW TEXT -->
+  <div class="preview-section">
+    <div class="preview-header">
+      <div class="preview-label">Preview Text</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot green"></div> Human</div>
+        <div class="legend-item"><div class="legend-dot amber"></div> AI</div>
+      </div>
+    </div>
+
+    <div class="card preview-card" id="previewCard">
+      <div class="preview-empty" id="previewEmpty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M9 12h6M9 16h6M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z"/>
+        </svg>
+        <p>Teks hasil analisis</p>
+      </div>
+      <div id="previewText" style="display:none"></div>
+      <div class="preview-scroll-track"><div class="preview-scroll-thumb"></div></div>
+    </div>
+  </div>
+
+  <!-- SCORE ROW -->
+  <div class="score-row">
+    <div class="score-item human">
+      <div class="score-name">Human Words</div>
+      <div class="score-num" id="humanNum">0</div>
+      <div class="score-tag" id="humanTag">Terdeteksi</div>
+    </div>
+    <div class="score-item ai">
+      <div class="score-name">AI  Words</div>
+      <div class="score-num" id="aiNum">0</div>
+      <div class="score-tag" id="aiTag">Terdeteksi</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const AI_PAT = [
+  /\b(furthermore|moreover|additionally|consequently|nevertheless|notwithstanding|aforementioned)\b/gi,
+  /\b(it is important to note|it should be noted|in conclusion|in summary|to summarize|first and foremost)\b/gi,
+  /\b(perlu dicatat bahwa|penting untuk diketahui|secara keseluruhan|sebagai kesimpulan|dengan demikian|oleh karena itu|dalam hal ini)\b/gi,
+  /\b(utilize|leverage|facilitate|streamline|optimize|synergy|holistic|robust)\b/gi,
+  /\b(komprehensif|signifikan|fundamental|implementasi|optimalisasi|efektivitas|paradigma|transformatif)\b/gi,
+  /\b(it is worth noting|plays a crucial role|in the realm of|a testament to|it is essential to)\b/gi,
+];
+
+let result = null;
+
+function onInput() {
+  document.getElementById('charNum').textContent =
+    document.getElementById('inputText').value.length;
+}
+
+const ic = document.getElementById('inputCard');
+ic.addEventListener('dragover', e => { e.preventDefault(); ic.classList.add('drag-on'); });
+ic.addEventListener('dragleave', () => ic.classList.remove('drag-on'));
+ic.addEventListener('drop', e => {
+  e.preventDefault(); ic.classList.remove('drag-on');
+  const f = e.dataTransfer.files[0];
+  if (f) { const r = new FileReader(); r.onload = ev => { document.getElementById('inputText').value = ev.target.result; onInput(); }; r.readAsText(f); }
+});
+
+async function analyze() {
+  const txt = document.getElementById('inputText').value.trim();
+  if (!txt) { toast('Masukkan teks terlebih dahulu'); return; }
+  const btn = document.getElementById('scanBtn');
+  btn.classList.add('running'); btn.textContent = '...';
+  await new Promise(r => setTimeout(r, 800));
+  result = detect(txt);
+  render(result);
+  btn.classList.remove('running'); btn.textContent = 'scan';
+}
+
+function detect(txt) {
+  const words = txt.split(/\s+/).filter(Boolean);
+  const total = words.length;
+  const aiIdx = new Set();
+
+  AI_PAT.forEach(p => {
+    const re = new RegExp(p.source, p.flags);
+    let m;
+    while ((m = re.exec(txt)) !== null) {
+      const before = txt.slice(0, m.index).split(/\s+/).filter(Boolean).length;
+      for (let i = before; i < before + m[0].split(/\s+/).length; i++) aiIdx.add(i);
+    }
+  });
+
+  const sents = txt.split(/[.!?]+/).filter(s => s.trim());
+  const avgLen = total / Math.max(sents.length, 1);
+  const noContr = !/\b(don't|can't|won't|I'm|it's|they're|we're|I've)\b/i.test(txt);
+  const bonus = (avgLen > 22 ? 0.12 : 0) + (noContr && total > 40 ? 0.07 : 0);
+  const aiRaw = Math.min(aiIdx.size / Math.max(total, 1) + bonus, 0.80);
+
+  const aiPct  = Math.round(aiRaw * 1000) / 10;
+  const hPct   = Math.round((1 - aiRaw) * 1000) / 10;
+
+  let wi = 0;
+  const html = txt.replace(/(\S+)/g, w => `<span class="${aiIdx.has(wi++) ? 'w-ai' : 'w-human'}">${w}</span>`);
+
+  return { aiPct, hPct, total, aiW: aiIdx.size, hW: total - aiIdx.size, html, isHuman: hPct >= 70 };
+}
+
+function render(r) {
+  document.getElementById('analysisTag').textContent = r.isHuman ? ': human text' : ': AI generated';
+  document.getElementById('mainPct').textContent = fmt(r.hPct) + '%';
+
+  setTimeout(() => {
+    document.getElementById('humanBar').style.width = r.hPct + '%';
+    document.getElementById('aiBar').style.width    = r.aiPct + '%';
+  }, 50);
+  document.getElementById('humanPct').textContent = fmt(r.hPct) + '%';
+  document.getElementById('aiPct').textContent    = fmt(r.aiPct) + '%';
+
+  document.getElementById('previewEmpty').style.display = 'none';
+  const pt = document.getElementById('previewText');
+  pt.style.display = 'block';
+  pt.innerHTML = r.html.replace(/\n/g, '<br>');
+
+  countUp('humanNum', r.hW);
+  countUp('aiNum', r.aiW);
+  document.getElementById('humanTag').textContent = r.isHuman ? 'Terdeteksi' : 'Tidak Dominan';
+  document.getElementById('aiTag').textContent    = r.isHuman ? 'Tidak Dominan' : 'Terdeteksi';
+}
+
+function fmt(n) { return n.toFixed(1).replace('.', ','); }
+
+function countUp(id, target) {
+  const el = document.getElementById(id);
+  let c = 0, step = Math.max(1, target / 40);
+  const iv = setInterval(() => { c = Math.min(c + step, target); el.textContent = Math.round(c); if (c >= target) clearInterval(iv); }, 16);
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+document.getElementById('inputText').addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') analyze();
+});
+</script>
+</body>
+</html>

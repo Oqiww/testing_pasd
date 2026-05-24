@@ -508,8 +508,12 @@ async function analyze() {
     return;
   }
   
-  // Word count validation (5,000 words limit)
+  // Word count validation (50 to 5,000 words limit)
   const words = txt.split(/\s+/).filter(Boolean);
+  if (words.length < 50) {
+    toast('Teks terlalu pendek. Minimal input adalah 50 kata.');
+    return;
+  }
   if (words.length > 5000) {
     toast('Teks terlalu panjang. Maksimal input adalah 5.000 kata.');
     return;

@@ -131,8 +131,18 @@ async def predict(payload: PredictRequest):
             error="Teks mengandung emoji. Silakan hapus emoji karena model tidak dilatih untuk memproses emoji."
         )
         
-    # Word count validation (5,000 words limit)
+    # Word count validation (50 to 5,000 words limit)
     words = [w for w in re.split(r'\s+', text) if w]
+    if len(words) < 50:
+        return PredictResponse(
+            success=False,
+            label="unknown",
+            confidence=0.0,
+            human_pct=0.0,
+            ai_pct=0.0,
+            method="Validation Engine",
+            error="Teks terlalu pendek. Minimal input adalah 50 kata."
+        )
     if len(words) > 5000:
         return PredictResponse(
             success=False,

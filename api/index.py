@@ -100,6 +100,17 @@ class PredictResponse(BaseModel):
     method: str
     error: str = None
 
+def has_emoji(text: str) -> bool:
+    """Check if the text contains any emojis using standard Unicode ranges."""
+    for char in text:
+        cp = ord(char)
+        # Emoticons, Pictographs, Dingbats, and Miscellaneous Symbols
+        if 0x1F000 <= cp <= 0x1FAFF:
+            return True
+        if 0x2600 <= cp <= 0x27BF:
+            return True
+    return False
+
 # API Endpoints
 @app.post("/api/predict", response_model=PredictResponse)
 async def predict(payload: PredictRequest):
@@ -107,6 +118,31 @@ async def predict(payload: PredictRequest):
     text = payload.text.strip()
     if not text:
         raise HTTPException(status_code=400, detail="Teks input tidak boleh kosong.")
+        
+    # Emoji validation
+    if has_emoji(text):
+        return PredictResponse(
+            success=False,
+            label="unknown",
+            confidence=0.0,
+            human_pct=0.0,
+            ai_pct=0.0,
+            method="Validation Engine",
+            error="Teks mengandung emoji. Silakan hapus emoji karena model tidak dilatih untuk memproses emoji."
+        )
+        
+    # Word count validation (5,000 words limit)
+    words = [w for w in re.split(r'\s+', text) if w]
+    if len(words) > 5000:
+        return PredictResponse(
+            success=False,
+            label="unknown",
+            confidence=0.0,
+            human_pct=0.0,
+            ai_pct=0.0,
+            method="Validation Engine",
+            error="Teks terlalu panjang. Maksimal input adalah 5.000 kata."
+        )
         
     # Attempt to load ML model (Lazy initialization)
     has_ml = load_ml_resources()

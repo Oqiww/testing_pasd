@@ -488,9 +488,33 @@ ic.addEventListener('drop', e => {
   if (f) { const r = new FileReader(); r.onload = ev => { document.getElementById('inputText').value = ev.target.result; onInput(); }; r.readAsText(f); }
 });
 
+function hasEmoji(str) {
+  for (let char of str) {
+    const cp = char.codePointAt(0);
+    // Emoticons, Pictographs, Dingbats, and Miscellaneous Symbols
+    if (cp >= 0x1F300 && cp <= 0x1FAFF) return true;
+    if (cp >= 0x2600 && cp <= 0x27BF) return true;
+    if (cp >= 0x1F000 && cp <= 0x1F2FF) return true;
+  }
+  return false;
+}
+
 async function analyze() {
   const txt = document.getElementById('inputText').value.trim();
   if (!txt) { toast('Masukkan teks terlebih dahulu'); return; }
+  
+  // Emoji validation
+  if (hasEmoji(txt)) {
+    toast('Teks mengandung emoji. Silakan hapus emoji karena model tidak dilatih untuk memproses emoji.');
+    return;
+  }
+  
+  // Word count validation (5,000 words limit)
+  const words = txt.split(/\s+/).filter(Boolean);
+  if (words.length > 5000) {
+    toast('Teks terlalu panjang. Maksimal input adalah 5.000 kata.');
+    return;
+  }
   
   const btn = document.getElementById('scanBtn');
   btn.classList.add('running'); 
